@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import requests from 'requests'
 
 export async function GET() {
   try {
