@@ -1,2 +1,9 @@
 2025-05-07 16:44:50,892 - INFO - 域名安全检测服务启动
 2025-05-07 16:44:50,893 - INFO - 开始检查域名: example.com
+2025-05-07 16:44:57,674 - ERROR - Google 检测异常: example.com, 错误: ('Connection aborted.', OSError(0, 'Error'))
+2025-05-07 16:44:59,378 - WARNING - Spamhaus 检测失败: example.com, 状态码: 403
+2025-05-07 16:44:59,380 - INFO - 域名 example.com 检查完成: Google=紫色, Spamhaus=紫色
+2025-05-07 16:44:59,380 - INFO - 开始检查域名: test.com
+2025-05-07 16:45:01,536 - WARNING - Spamhaus 检测失败: test.com, 状态码: 403
+2025-05-07 16:45:01,537 - INFO - 域名 test.com 检查完成: Google=黄色, Spamhaus=紫色
+2025-05-07 16:45:01,538 - INFO - 所有域名检查完成
