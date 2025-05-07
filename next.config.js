@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
-  experimental: {
-    serverActions: true,
+  output: 'standalone',
+  images: {
+    domains: ['transparencyreport.google.com', 'check.spamhaus.org'],
   },
 }
 
