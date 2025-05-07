@@ -1,12 +1,12 @@
 {
     "example.com": {
-        "google_status": "紫色",
+        "google_status": "黄色",
         "spamhaus_status": "紫色",
-        "timestamp": "2025-05-07 16:44:59"
+        "timestamp": "2025-05-07 16:59:55"
     },
     "test.com": {
         "google_status": "黄色",
         "spamhaus_status": "紫色",
-        "timestamp": "2025-05-07 16:45:01"
+        "timestamp": "2025-05-07 16:59:58"
     }
 }

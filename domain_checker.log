@@ -7,3 +7,10 @@
 2025-05-07 16:45:01,536 - WARNING - Spamhaus 检测失败: test.com, 状态码: 403
 2025-05-07 16:45:01,537 - INFO - 域名 test.com 检查完成: Google=黄色, Spamhaus=紫色
 2025-05-07 16:45:01,538 - INFO - 所有域名检查完成
+2025-05-07 16:59:51,687 - INFO - 开始检查域名: example.com
+2025-05-07 16:59:55,451 - WARNING - Spamhaus 检测失败: example.com, 状态码: 403
+2025-05-07 16:59:55,452 - INFO - 域名 example.com 检查完成: Google=黄色, Spamhaus=紫色
+2025-05-07 16:59:55,452 - INFO - 开始检查域名: test.com
+2025-05-07 16:59:58,100 - WARNING - Spamhaus 检测失败: test.com, 状态码: 403
+2025-05-07 16:59:58,101 - INFO - 域名 test.com 检查完成: Google=黄色, Spamhaus=紫色
+2025-05-07 16:59:58,102 - INFO - 所有域名检查完成

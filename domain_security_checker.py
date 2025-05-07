@@ -9,6 +9,10 @@ import os
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import random
+import urllib3
+
+# 禁用 SSL 警告
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # 配置日志
 logging.basicConfig(
@@ -24,9 +28,10 @@ logging.basicConfig(
 def create_session():
     session = requests.Session()
     retry = Retry(
-        total=3,
-        backoff_factor=1,
-        status_forcelist=[500, 502, 503, 504, 403]
+        total=5,  # 增加重试次数
+        backoff_factor=2,  # 增加退避因子
+        status_forcelist=[500, 502, 503, 504, 403, 429],  # 添加429状态码
+        allowed_methods=["GET", "POST"]  # 允许重试的请求方法
     )
     adapter = HTTPAdapter(max_retries=retry)
     session.mount('http://', adapter)
@@ -35,12 +40,18 @@ def create_session():
 
 # 通用请求头
 HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
     'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+    'Accept-Encoding': 'gzip, deflate, br',
     'Connection': 'keep-alive',
     'Upgrade-Insecure-Requests': '1',
-    'Cache-Control': 'max-age=0'
+    'Cache-Control': 'max-age=0',
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'none',
+    'Sec-Fetch-User': '?1',
+    'DNT': '1'
 }
 
 def check_google_transparency(domain):
@@ -48,8 +59,8 @@ def check_google_transparency(domain):
     session = create_session()
     try:
         # 添加随机延迟
-        time.sleep(random.uniform(1, 3))
-        response = session.get(url, headers=HEADERS, timeout=15)
+        time.sleep(random.uniform(2, 4))
+        response = session.get(url, headers=HEADERS, timeout=20, verify=False)
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, 'html.parser')
             if "No unsafe content found" in soup.text:
@@ -70,8 +81,8 @@ def check_spamhaus(domain):
     session = create_session()
     try:
         # 添加随机延迟
-        time.sleep(random.uniform(1, 3))
-        response = session.get(url, headers=HEADERS, timeout=15)
+        time.sleep(random.uniform(2, 4))
+        response = session.get(url, headers=HEADERS, timeout=20, verify=False)
         if response.status_code == 200:
             if "is not listed" in response.text:
                 return "绿色"
@@ -102,7 +113,7 @@ def check_domains():
         for domain in domains:
             logging.info(f"开始检查域名: {domain}")
             google_status = check_google_transparency(domain)
-            time.sleep(random.uniform(2, 4))  # 添加随机延迟
+            time.sleep(random.uniform(3, 5))  # 增加延迟时间
             spamhaus_status = check_spamhaus(domain)
             
             results[domain] = {
