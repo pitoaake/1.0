@@ -8,6 +8,7 @@ import logging
 import os
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+import random
 
 # 配置日志
 logging.basicConfig(
@@ -25,7 +26,7 @@ def create_session():
     retry = Retry(
         total=3,
         backoff_factor=1,
-        status_forcelist=[500, 502, 503, 504]
+        status_forcelist=[500, 502, 503, 504, 403]
     )
     adapter = HTTPAdapter(max_retries=retry)
     session.mount('http://', adapter)
@@ -37,13 +38,18 @@ HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
     'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+    'Connection': 'keep-alive',
+    'Upgrade-Insecure-Requests': '1',
+    'Cache-Control': 'max-age=0'
 }
 
 def check_google_transparency(domain):
     url = f"https://transparencyreport.google.com/safe-browsing/search?url={domain}"
     session = create_session()
     try:
-        response = session.get(url, headers=HEADERS, timeout=10)
+        # 添加随机延迟
+        time.sleep(random.uniform(1, 3))
+        response = session.get(url, headers=HEADERS, timeout=15)
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, 'html.parser')
             if "No unsafe content found" in soup.text:
@@ -63,7 +69,9 @@ def check_spamhaus(domain):
     url = f"https://check.spamhaus.org/listed/?domain={domain}"
     session = create_session()
     try:
-        response = session.get(url, headers=HEADERS, timeout=10)
+        # 添加随机延迟
+        time.sleep(random.uniform(1, 3))
+        response = session.get(url, headers=HEADERS, timeout=15)
         if response.status_code == 200:
             if "is not listed" in response.text:
                 return "绿色"
@@ -94,7 +102,7 @@ def check_domains():
         for domain in domains:
             logging.info(f"开始检查域名: {domain}")
             google_status = check_google_transparency(domain)
-            time.sleep(2)  # 添加延迟，避免请求过快
+            time.sleep(random.uniform(2, 4))  # 添加随机延迟
             spamhaus_status = check_spamhaus(domain)
             
             results[domain] = {
