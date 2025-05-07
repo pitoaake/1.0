@@ -9,6 +9,7 @@ export default function Home() {
   const [newDomain, setNewDomain] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const fetchData = async () => {
     try {
@@ -17,6 +18,7 @@ export default function Home() {
       setLoading(false)
     } catch (error) {
       console.error('Error fetching data:', error)
+      setError('获取数据失败，请稍后重试')
       setLoading(false)
     }
   }
@@ -31,6 +33,7 @@ export default function Home() {
     e.preventDefault()
     setError('')
     setSuccess('')
+    setIsSubmitting(true)
 
     try {
       const response = await axios.post('/api/domains', { domain: newDomain })
@@ -39,6 +42,8 @@ export default function Home() {
       fetchData()
     } catch (error) {
       setError(error.response?.data?.error || '添加域名失败')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -77,12 +82,16 @@ export default function Home() {
                   onChange={(e) => setNewDomain(e.target.value)}
                   className="flex-1 min-w-0 block w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="example.com"
+                  disabled={isSubmitting}
                 />
                 <button
                   type="submit"
-                  className="ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className={`ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                    isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                  disabled={isSubmitting}
                 >
-                  添加
+                  {isSubmitting ? '添加中...' : '添加'}
                 </button>
               </div>
             </div>
@@ -98,10 +107,23 @@ export default function Home() {
         {/* 域名状态表格 */}
         <div className="bg-white shadow rounded-lg">
           <div className="px-4 py-5 sm:p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">域名安全状态</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-medium text-gray-900">域名安全状态</h2>
+              <button
+                onClick={fetchData}
+                className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                disabled={loading}
+              >
+                {loading ? '刷新中...' : '刷新'}
+              </button>
+            </div>
             {loading ? (
               <div className="flex justify-center items-center h-64">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+              </div>
+            ) : domains.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                暂无域名数据，请添加域名
               </div>
             ) : (
               <div className="overflow-x-auto">

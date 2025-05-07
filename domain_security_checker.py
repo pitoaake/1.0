@@ -6,6 +6,8 @@ import time
 from datetime import datetime
 import logging
 import os
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # 配置日志
 logging.basicConfig(
@@ -17,10 +19,31 @@ logging.basicConfig(
     ]
 )
 
+# 配置请求会话
+def create_session():
+    session = requests.Session()
+    retry = Retry(
+        total=3,
+        backoff_factor=1,
+        status_forcelist=[500, 502, 503, 504]
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+    return session
+
+# 通用请求头
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+}
+
 def check_google_transparency(domain):
     url = f"https://transparencyreport.google.com/safe-browsing/search?url={domain}"
+    session = create_session()
     try:
-        response = requests.get(url, timeout=10)
+        response = session.get(url, headers=HEADERS, timeout=10)
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, 'html.parser')
             if "No unsafe content found" in soup.text:
@@ -38,8 +61,9 @@ def check_google_transparency(domain):
 
 def check_spamhaus(domain):
     url = f"https://check.spamhaus.org/listed/?domain={domain}"
+    session = create_session()
     try:
-        response = requests.get(url, timeout=10)
+        response = session.get(url, headers=HEADERS, timeout=10)
         if response.status_code == 200:
             if "is not listed" in response.text:
                 return "绿色"
@@ -70,6 +94,7 @@ def check_domains():
         for domain in domains:
             logging.info(f"开始检查域名: {domain}")
             google_status = check_google_transparency(domain)
+            time.sleep(2)  # 添加延迟，避免请求过快
             spamhaus_status = check_spamhaus(domain)
             
             results[domain] = {
